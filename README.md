@@ -12,10 +12,10 @@ resetPin = Pin for Hardware-Reset od Breadboard Mate
 
 Example:
 
-
 import wymates
-#create a object named "mate" with comport = 0, tx-Pin = GPIO 0, rx-Pin = GPIO 1, ResetPin = GPIO 2
 mate = wymates.wy_mates(0,0,1,2)
+
+create a object named "mate" with comport = 0, tx-Pin = GPIO 0, rx-Pin = GPIO 1, ResetPin = GPIO 2
 
 
 
