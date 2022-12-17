@@ -4,11 +4,12 @@ A libary to use Breadboard Mates with micropython
 
 Description:
 
-To use wymates you have to create a object with the class wy_mates and the following attributes:
+To use wymates create an object with the class wy_mates and the following attributes:
+
 Comport = Number of serial port
 txPin = TX-Pin of Comport
 rxPin = RX-Pin of Comport
-resetPin = Pin for Hardware-Reset
+resetPin = Pin for Hardware-Reset (99 if no hardware reset)
 
 Example:
 
