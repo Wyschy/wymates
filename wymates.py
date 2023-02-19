@@ -1,15 +1,9 @@
-#Types:
+# Wymates is a libary to use BreadBoard Mates with Micropython
 
-#0x30 = GaugeA
-#0x40 = MediaLED
-#0x41 = MediaColorLED
-#0x46 = MediagaugeA
-#0x47 = MediagaugeB
-#0x48 = MediagaugeC
-#0x49 = MediagaugeD
-#0x4A = Mediathermometer
-#0x4F = RotaryGauge
-#0x05 = LED Digits
+# Thomas Wyschkony
+
+# February 2023
+# Version 1.0
 
 
 
@@ -18,8 +12,6 @@ from machine import Pin
 from time import sleep
 
 class wy_mates():
-    """ Instanz erstellen mit Com-Port, tx-Pin, rx-Pin und Resetpin
-    Pico Com0: com=0, tx-Pin=0, rx-Pin=1"""
 
     def __init__(self, com, txp, rxp, resetp):
         self.com = com
@@ -46,7 +38,6 @@ class wy_mates():
     def senduart(self,command):
         port = UART(self.com, baudrate=9600, tx=Pin(self.txp), rx=Pin(self.rxp))
         port.write(command)
-        #print("Gesendet: ",command)
         sleep(0.5)
         while port.any():
             return(port.read())
@@ -128,8 +119,6 @@ class wy_mates():
 
 
     def setMediaLed(self,led,x):
-    #[ SetWidgetValue: Set MediaLed0 (0x4000) value to 1 ]
-    #24 00 02 40 00 00 01
         led=(led).to_bytes(1,'big')
         x=(x).to_bytes(2,'big')
         command=(b'\x24\x00\x02\x40')+led+x
