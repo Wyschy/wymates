@@ -8,7 +8,6 @@
 #0x48 = MediagaugeC
 #0x49 = MediagaugeD
 #0x4A = Mediathermometer
-#0x4D = Scope
 #0x4F = RotaryGauge
 #0x05 = LED Digits
 
@@ -30,21 +29,32 @@ class wy_mates():
         self.page = 0
         
     def begin(self):
-        port = UART(self.com, baudrate=9600, tx=Pin(self.txp), rx=Pin(self.rxp))
-        resetpin=Pin(self.resetp,Pin.OUT)
-        resetpin.value(0)
-        sleep(0.5)
-        resetpin.value(1)
-        print("wait for reset")
-        sleep(5)
-        while port.any():
-            return(port.read())
+        if self.resetp!=99:
+            port = UART(self.com, baudrate=9600, tx=Pin(self.txp), rx=Pin(self.rxp))
+            resetpin=Pin(self.resetp,Pin.OUT)
+            resetpin.value(0)
+            sleep(0.5)
+            resetpin.value(1)
+            print("wait for reset")
+            sleep(5)
+            while port.any():
+                return(port.read())
+        else:
+            command=(b'\x24\x00\x09')
+            return(self.senduart(command))
 
     def senduart(self,command):
         port = UART(self.com, baudrate=9600, tx=Pin(self.txp), rx=Pin(self.rxp))
         port.write(command)
-        print("Gesendet: ",command)
+        #print("Gesendet: ",command)
         sleep(0.5)
+        while port.any():
+            return(port.read())
+        
+    def sendfast(self,command):
+        port = UART(self.com, baudrate=9600, tx=Pin(self.txp), rx=Pin(self.rxp))
+        port.write(command)
+        sleep(0.1)
         while port.any():
             return(port.read())
         
@@ -88,12 +98,33 @@ class wy_mates():
         idx=(idx).to_bytes(1,'big')
         command=(b'\x24\x00\x02\x4A')+idx+x
         return(self.senduart(command))
+    
+    def setScope(self,idx,x,max):
+        max=int(max/2)
+        if x > max:
+            x = max
+        elif x < -max:
+            x = -max
+        x=(x+max).to_bytes(2,'big')
+        idx=(idx).to_bytes(1,'big')
+        command=(b'\x24\x00\x02\x4D')+idx+x
+        self.sendfast(command)
 
     def setTextArea(self,idx,x):
         idx=(idx).to_bytes(2,'big')
-        command=(b'\x24\xFF\xFF')+idx+x
+        command=(b'\x24\xFF\xFF')+idx+x+(b'\0x00')
         return(self.senduart(command))
 
+    def clearPrintArea(self,idx):
+        idx=(idx).to_bytes(2,'big')
+        command=(b'\x24\x00\x07')+idx
+        return(self.senduart(command))
+
+    def setPrintArea(self,idx,x):
+        idx=(idx).to_bytes(2,'big')
+        x=(x).to_bytes(2,'big')
+        command=(b'\x24\xFF\xFE')+idx+x+(b'\0x00')
+        return(self.senduart(command))
 
 
     def setMediaLed(self,led,x):
@@ -103,20 +134,40 @@ class wy_mates():
         x=(x).to_bytes(2,'big')
         command=(b'\x24\x00\x02\x40')+led+x
         return(self.senduart(command))
-
-
-
-
+    
+    def setLed(self,led,x):
+        led=(led).to_bytes(1,'big')
+        x=(x).to_bytes(2,'big')
+        command=(b'\x24\x00\x02\x00')+led+x
+        return(self.senduart(command))
         
+    def getpage(self):
+        port = UART(self.com, baudrate=9600, tx=Pin(self.txp), rx=Pin(self.rxp))
+        command=(b'\x24\x00\x01')
+        port.write(command)
+        sleep(0.5)
+        while port.any():
+            x,y,z=port.read()
+            return(z)
         
-    #def getpage(self):
-        #port = UART(self.com, baudrate=9600, tx=Pin(self.txp), rx=Pin(self.rxp))
-        #command=(b'\x24\x00\x01')
-        #port.write(command)
-        #print("Gesendet: ",command)
-        #sleep(0.5)
-        #while port.any():
-            #x=port.read()
-            #x=int.from_bytes(port.read(),'big')
-            #print(x)
-            #sleep(0.5)
+    def checkpages(self,show):
+        active = self.getpage()
+        print("please wait until i check the numbers of pages")
+        check = True
+        page = 0
+        while check:
+            self.setpage(page)
+            if self.getpage() != page:
+                check = False
+            else:
+                page += 1
+            sleep(show)
+        self.setpage(active)
+        return(page-1)
+
+    def setBacklight(self,x):
+        if x > 15:
+            x = 15            
+        x=(x).to_bytes(2,'big')
+        command=(b'\x24\x00\x06')+x
+        return(self.senduart(command))
