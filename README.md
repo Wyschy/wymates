@@ -24,3 +24,4 @@ Alternative:
 
 create a object "mate" with no Hardware Reset.
 
+For more info read the pdf-file: https://github.com/Wyschy/wymates/blob/main/wymates.pdf
